@@ -1,4 +1,4 @@
-use crate::{masks::{OFFSET_BLACK, OFFSET_WHITE}, player::Player};
+use crate::{masks::offset_board, player::Player};
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct Coordinate(u64);
@@ -12,22 +12,7 @@ impl Coordinate {
         Coordinate(ring * 8 + cell)
     }
 
-    pub fn as_player(&self, player: &Player) -> u64 {
-        match player {
-            Player::White => self.as_white(),
-            Player::Black => self.as_black(),
-        }
-    }
-
-    fn as_mask(&self) -> u64 {
-        1 << self.0
-    }
-
-    pub fn as_white(&self) -> u64 {
-        self.as_mask() << OFFSET_WHITE
-    }
-
-    pub fn as_black(&self) -> u64 {
-        self.as_mask() << OFFSET_BLACK
+    pub fn as_mask(&self, player: Player) -> u64 {
+        (1 << self.0) << offset_board(player)
     }
 }

@@ -1,15 +1,17 @@
-pub static BITS_BOARD: u64 = 24;
-pub static BITS_STASH: u64 = 4;
-pub static OFFSET_WHITE: u64 = BITS_BOARD;
-pub static OFFSET_BLACK: u64 = 0;
-pub static MASK_STASH_WHITE: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD+BITS_STASH);
-pub static MASK_STASH_BLACK: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD);
-pub static MASK_STASH: u64 = MASK_STASH_WHITE | MASK_STASH_BLACK;
-pub static MASK_BOARD_BLACK: u64 = (1 << BITS_BOARD) - 1;
-pub static MASK_BOARD_WHITE: u64 = MASK_BOARD_BLACK << BITS_BOARD;
-pub static MASK_BOARD: u64 = MASK_BOARD_WHITE | MASK_BOARD_BLACK;
+use crate::player::Player;
 
-pub static MASK_MILLS: [u64;16] = [
+const BITS_BOARD: u64 = 24;
+const BITS_STASH: u64 = 4;
+const OFFSET_BOARD_WHITE: u64 = BITS_BOARD;
+const OFFSET_BOARD_BLACK: u64 = 0;
+const OFFSET_STASH_WHITE: u64 = 2*BITS_BOARD+BITS_STASH;
+const OFFSET_STASH_BLACK: u64 = 2*BITS_BOARD;
+const MASK_STASH_WHITE: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD+BITS_STASH);
+const MASK_STASH_BLACK: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD);
+const MASK_BOARD_BLACK: u64 = (1 << BITS_BOARD) - 1;
+const MASK_BOARD_WHITE: u64 = MASK_BOARD_BLACK << BITS_BOARD;
+
+pub const MASK_MILLS: [u64;16] = [
     0b0000000000000000000000000000000000000000000000000000000000000111,
     0b0000000000000000000000000000000000000000000000000000000000011100,
     0b0000000000000000000000000000000000000000000000000000000001110000,
@@ -27,3 +29,31 @@ pub static MASK_MILLS: [u64;16] = [
     0b0000000000000000000000000000000000000000001000000010000000100000,
     0b0000000000000000000000000000000000000000100000001000000010000000
 ];
+
+pub fn mask_board(player: Player) -> u64 {
+    match player {
+        Player::White => MASK_BOARD_WHITE,
+        Player::Black => MASK_BOARD_BLACK,
+    }
+}
+
+pub fn mask_stash(player: Player) -> u64 {
+    match player {
+        Player::White => MASK_STASH_WHITE,
+        Player::Black => MASK_STASH_BLACK,
+    }
+}
+
+pub fn offset_board(player: Player) -> u64 {
+    match player {
+        Player::White => OFFSET_BOARD_WHITE,
+        Player::Black => OFFSET_BOARD_BLACK,
+    }
+}
+
+pub fn offset_stash(player: Player) -> u64 {
+    match player {
+        Player::White => OFFSET_STASH_WHITE,
+        Player::Black => OFFSET_STASH_BLACK,
+    }
+}

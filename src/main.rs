@@ -7,17 +7,15 @@ mod state;
 
 use cell::Cell;
 use coordinate::Coordinate;
-use masks::{MASK_BOARD, MASK_BOARD_BLACK, MASK_BOARD_WHITE, MASK_STASH, MASK_STASH_BLACK, MASK_STASH_WHITE};
+use masks::{mask_board, mask_stash};
 use player::Player;
 use state::State;
 
 fn main() {
-    println!("MASK_STASH_WHITE: {:#b}", MASK_STASH_WHITE | (1<<63));
-    println!("MASK_STASH_BLACK: {:#b}", MASK_STASH_BLACK | (1<<63));
-    println!("MASK_STASH:       {:#b}", MASK_STASH       | (1<<63));
-    println!("MASK_BOARD_WHITE: {:#b}", MASK_BOARD_WHITE | (1<<63));
-    println!("MASK_BOARD_BLACK: {:#b}", MASK_BOARD_BLACK | (1<<63));
-    println!("MASK_BOARD:       {:#b}", MASK_BOARD       | (1<<63));
+    println!("MASK_BOARD_WHITE: {:#b}", mask_board(Player::White) | (1<<63));
+    println!("MASK_BOARD_BLACK: {:#b}", mask_board(Player::Black) | (1<<63));
+    println!("MASK_STASH_WHITE: {:#b}", mask_stash(Player::White) | (1<<63));
+    println!("MASK_STASH_BLACK: {:#b}", mask_stash(Player::Black) | (1<<63));
 
     let mut state = State::new();
     println!("0. State: Start {}", state);

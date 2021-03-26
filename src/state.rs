@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
-use crate::{cell::Cell, coordinate::Coordinate, masks::{BITS_BOARD, BITS_STASH, MASK_BOARD, MASK_BOARD_BLACK, MASK_BOARD_WHITE, MASK_STASH_BLACK, MASK_STASH_WHITE}, mill::Mill, player::Player};
+use crate::{cell::Cell, coordinate::Coordinate, masks::{mask_board, mask_stash, offset_stash}, mill::Mill, player::Player};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State(u64);
@@ -44,46 +44,29 @@ impl State {
     }
 
     pub fn set_stash(&mut self, stones: u64, player: Player) -> &mut Self {
-        match player {
-            Player::White => {
-                self.0 &= MASK_STASH_BLACK | MASK_BOARD;
-                self.0 |= stones << 2*BITS_BOARD + BITS_STASH;
-            },
-            Player::Black => {
-                self.0 &= MASK_STASH_WHITE | MASK_BOARD;
-                self.0 |= stones << 2*BITS_BOARD;
-            },
-        }
+        self.0 &= !mask_stash(player);
+        self.0 |= stones << offset_stash(player);
         self
     }
 
     pub fn get_stash(&self, player: Player) -> u64 {
-        match player {
-            Player::White => (self.0 & MASK_STASH_WHITE) >> 2*BITS_BOARD + BITS_STASH,
-            Player::Black => (self.0 & MASK_STASH_BLACK) >> 2*BITS_BOARD,
-        }
+        (self.0 & mask_stash(player)) >> offset_stash(player)
     }
 
     pub fn decrement_stash(&mut self, player: Player) -> &mut Self {
-        match player {
-            Player::White => self.0 -= 1 << (2*BITS_BOARD+BITS_STASH),
-            Player::Black => self.0 -= 1 << (2*BITS_BOARD),
-        }
+        self.0 -= 1 << offset_stash(player);
         self
     }
 
     pub fn has_stash(&self, player: Player) -> bool {
-        match player {
-            Player::White => (self.0 & MASK_STASH_WHITE) != 0,
-            Player::Black => (self.0 & MASK_STASH_BLACK) != 0,
-        }
+        (self.0 & mask_stash(player)) != 0
     }
 
     pub fn get(&self, coordinate: &Coordinate) -> Cell {
-        if self.0 & coordinate.as_white() != 0 {
+        if self.0 & coordinate.as_mask(Player::White) != 0 {
             Cell::White
         }
-        else if self.0 & coordinate.as_black() != 0 {
+        else if self.0 & coordinate.as_mask(Player::Black) != 0 {
             Cell::Black
         }
         else {
@@ -93,12 +76,12 @@ impl State {
 
     pub fn place(&mut self, coordinate: &Coordinate, cell: Cell) -> &mut Self {
         match cell {
-            Cell::White => self.0 |= coordinate.as_white(),
-            _ => self.0 &= !coordinate.as_white(),
+            Cell::White => self.0 |= coordinate.as_mask(Player::White),
+            _ => self.0 &= !coordinate.as_mask(Player::White),
         }
         match cell {
-            Cell::Black => self.0 |= coordinate.as_black(),
-            _ => self.0 &= !coordinate.as_black(),
+            Cell::Black => self.0 |= coordinate.as_mask(Player::Black),
+            _ => self.0 &= !coordinate.as_mask(Player::Black),
         }
         self
     }
@@ -111,10 +94,7 @@ impl State {
     }
 
     pub fn count_stones(&self, player: Player) -> u32 {
-        match player {
-            Player::White => (self.0 & MASK_BOARD_WHITE).count_ones(),
-            Player::Black => (self.0 & MASK_BOARD_BLACK).count_ones(),
-        }
+        (self.0 & mask_board(player)).count_ones()
     }
 
     pub fn get_cells(&self, cell: Cell) -> Vec<Coordinate> {
@@ -133,7 +113,7 @@ impl State {
     }
 
     pub fn has_mill(&self, player: Player, mill: &Mill) -> bool {
-        (self.0 & mill.as_player(&player)) ^ mill.as_player(&player) == 0
+        (self.0 & mill.as_mask(player)) ^ mill.as_mask(player) == 0
     }
 
     pub fn get_mills(&self, player: Player) -> Vec<Mill> {
