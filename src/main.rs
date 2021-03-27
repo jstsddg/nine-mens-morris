@@ -43,13 +43,4 @@ fn main() {
     state.place(&Coordinate::new_index(15), Cell::White);
     state.place(&Coordinate::new_index(2), Cell::White);
     println!("8. State: Stash w-- {}", state);
-
-    let s0 = State::new();
-    println!("s0: {}", s0);
-    for s in s0.next_states(Player::White) {
-        println!("next_state {}", s);
-    }
-
-    println!("Mills White: {:?}", state.get_mills(Player::White));
-    println!("Mills Black: {:?}", state.get_mills(Player::Black));
 }

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::{cell::Cell, coordinate::Coordinate, masks::{MASK_MILLS, offset_board}, player::Player, state::State};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Mill(usize);
 
 impl Mill {
@@ -42,20 +42,29 @@ impl State {
             .collect()
     }
 
+    pub fn get_poundable_cells(&self, player: Player) -> HashSet<Coordinate> {
+        let stones_placed: HashSet<_> = self.get_cells(player.into()).into_iter().collect();
+        let stones_mills:  HashSet<_> = self.get_mills_cells(player).into_iter().collect();
+        
+        if stones_placed.len() == stones_mills.len() {
+            stones_placed
+        }
+        else {
+            stones_placed.into_iter()
+                .filter(|coordinate| !stones_mills.contains(coordinate))
+                .collect()
+        }
+    }
+
     pub fn pound_stones(&self, opponent: Player, count: usize) -> HashSet<State> {
         if count <= 0 {
             return vec![self.clone()].into_iter().collect();
         }
 
-        let stones_placed: HashSet<Coordinate> = self.get_cells(opponent.into()).into_iter().collect();
-        let stones_mills:  HashSet<Coordinate> = self.get_mills_cells(opponent).into_iter().collect();
-        
-        let stones_difference = stones_placed.difference(&stones_mills);
-
-        stones_difference.into_iter()
+        self.get_poundable_cells(opponent).into_iter()
             .map(|coordinate| -> State {
                 let mut state = self.clone();
-                state.place(coordinate, Cell::Empty);
+                state.place(&coordinate, Cell::Empty);
                 state
             })
             .map(|state| state.pound_stones(opponent, count - 1))
@@ -64,7 +73,12 @@ impl State {
     }
 
     /// Pound a stone for every new mill from player
-    pub fn pound_mills(&self, _player: Player, _mills_before: &Vec<Mill>) -> HashSet<State> {
-        vec![self.clone()].into_iter().collect()
+    pub fn pound_mills(&self, player: Player, mills_before: &Vec<Mill>) -> HashSet<State> {
+        let mills = self.get_mills(player);
+        let mills: HashSet<_> = mills.iter().collect();
+        let mills_before: HashSet<_> = mills_before.into_iter().collect();
+
+        let count = mills.difference(&mills_before).count();
+        self.pound_stones(player.opponent(), count)
     }
 }
