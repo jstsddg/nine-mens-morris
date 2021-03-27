@@ -6,6 +6,7 @@ mod mill;
 mod state;
 mod phase;
 mod heuristic;
+mod game;
 
 use cell::Cell;
 use coordinate::Coordinate;
@@ -43,8 +44,10 @@ fn main() {
     state.place(&Coordinate::new_index(2), Cell::White);
     println!("8. State: Stash w-- {}", state);
 
-    for s in state.pound_stones(Player::White, 1) {
-        println!("Pound! {}", s);
+    let s0 = State::new();
+    println!("s0: {}", s0);
+    for s in s0.next_states(Player::White) {
+        println!("next_state {}", s);
     }
 
     println!("Mills White: {:?}", state.get_mills(Player::White));

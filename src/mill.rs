@@ -64,4 +64,9 @@ impl State {
             .flatten()
             .collect()
     }
+
+    /// Pound a stone for every new mill from player
+    pub fn pound_mills(&self, _player: Player, _mills_before: &Vec<Mill>) -> HashSet<State> {
+        vec![self.clone()].into_iter().collect()
+    }
 }

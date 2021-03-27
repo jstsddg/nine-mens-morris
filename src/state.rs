@@ -1,6 +1,6 @@
 use std::{fmt::Display};
 
-use crate::{cell::Cell, coordinate::Coordinate, masks::{mask_board, mask_stash, offset_stash}, player::Player};
+use crate::{coordinate::Coordinate, masks::{mask_board, mask_stash, offset_stash}, player::Player};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State(pub u64);
@@ -62,46 +62,8 @@ impl State {
         (self.0 & mask_stash(player)) != 0
     }
 
-    pub fn get(&self, coordinate: &Coordinate) -> Cell {
-        if self.0 & coordinate.as_mask(Player::White) != 0 {
-            Cell::White
-        }
-        else if self.0 & coordinate.as_mask(Player::Black) != 0 {
-            Cell::Black
-        }
-        else {
-            Cell::Empty
-        }
-    }
-
-    pub fn place(&mut self, coordinate: &Coordinate, cell: Cell) -> &mut Self {
-        match cell {
-            Cell::White => self.0 |= coordinate.as_mask(Player::White),
-            _ => self.0 &= !coordinate.as_mask(Player::White),
-        }
-        match cell {
-            Cell::Black => self.0 |= coordinate.as_mask(Player::Black),
-            _ => self.0 &= !coordinate.as_mask(Player::Black),
-        }
-        self
-    }
-
-    pub fn switch(&mut self, from: &Coordinate, to: &Coordinate) -> &mut Self {
-        let source = self.get(from);
-        let destination = self.get(to);
-        self.place(from, destination)
-            .place(to, source)
-    }
-
     pub fn count_stones(&self, player: Player) -> u64 {
         (self.0 & mask_board(player)).count_ones().into()
-    }
-
-    pub fn get_cells(&self, cell: Cell) -> Vec<Coordinate> {
-        (0..24)
-            .map(|i| Coordinate::new_index(i))
-            .filter(|c| self.get(c) == cell)
-            .collect()
     }
 
     pub fn has_enough_stones(&self, player: Player) -> bool {
