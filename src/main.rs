@@ -4,19 +4,15 @@ mod player;
 mod masks;
 mod mill;
 mod state;
+mod phase;
+mod heuristic;
 
 use cell::Cell;
 use coordinate::Coordinate;
-use masks::{mask_board, mask_stash};
 use player::Player;
 use state::State;
 
 fn main() {
-    println!("MASK_BOARD_WHITE: {:#b}", mask_board(Player::White) | (1<<63));
-    println!("MASK_BOARD_BLACK: {:#b}", mask_board(Player::Black) | (1<<63));
-    println!("MASK_STASH_WHITE: {:#b}", mask_stash(Player::White) | (1<<63));
-    println!("MASK_STASH_BLACK: {:#b}", mask_stash(Player::Black) | (1<<63));
-
     let mut state = State::new();
     println!("0. State: Start {}", state);
     
@@ -45,11 +41,12 @@ fn main() {
     state.place(&Coordinate::new_index(7), Cell::White);
     state.place(&Coordinate::new_index(15), Cell::White);
     state.place(&Coordinate::new_index(2), Cell::White);
-    state.place(&Coordinate::new_index(1), Cell::White);
     println!("8. State: Stash w-- {}", state);
 
-    println!("White: {:?}", state.get_cells(Cell::White));
-    println!("Black: {:?}", state.get_cells(Cell::Black));
+    for s in state.pound_stones(Player::White, 1) {
+        println!("Pound! {}", s);
+    }
+
     println!("Mills White: {:?}", state.get_mills(Player::White));
     println!("Mills Black: {:?}", state.get_mills(Player::Black));
 }
