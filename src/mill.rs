@@ -32,14 +32,14 @@ impl State {
 
     pub fn get_mills(&self, player: Player) -> Vec<Mill> {
         (0..16)
-            .map(|i| Mill::new(i))
-            .filter(|m| self.has_mill(player, &m))
+            .map(|index| Mill::new(index))
+            .filter(|mill| self.has_mill(player, &mill))
             .collect()
     }
 
     pub fn get_mills_cells(&self, player: Player) -> Vec<Coordinate> {
         self.get_mills(player).iter()
-            .map(|m| m.get_coordinates())
+            .map(|mill| mill.get_coordinates())
             .flatten()
             .collect()
     }
@@ -55,12 +55,12 @@ impl State {
         let stones_difference = stones_placed.difference(&stones_mills);
 
         stones_difference.into_iter()
-            .map(|c| -> State {
-                let mut s = self.clone();
-                s.place(c, Cell::Empty);
-                s
+            .map(|coordinate| -> State {
+                let mut state = self.clone();
+                state.place(coordinate, Cell::Empty);
+                state
             })
-            .map(|c| c.pound_stones(opponent, count - 1))
+            .map(|state| state.pound_stones(opponent, count - 1))
             .flatten()
             .collect()
     }

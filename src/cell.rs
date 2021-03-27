@@ -50,12 +50,12 @@ impl State {
 
     pub fn get_cells(&self, cell: Cell) -> Vec<Coordinate> {
         (0..24)
-            .map(|i| Coordinate::new_index(i))
-            .filter(|c| self.get(c) == cell)
+            .map(|index| Coordinate::new_index(index))
+            .filter(|coordinate| self.get(coordinate) == cell)
             .collect()
     }
 
-    pub fn place(&mut self, coordinate: &Coordinate, cell: Cell) -> &mut Self {
+    pub fn place(&mut self, coordinate: &Coordinate, cell: Cell) {
         match cell {
             Cell::White => self.0 |= coordinate.as_mask(Player::White),
             _ => self.0 &= !coordinate.as_mask(Player::White),
@@ -64,13 +64,12 @@ impl State {
             Cell::Black => self.0 |= coordinate.as_mask(Player::Black),
             _ => self.0 &= !coordinate.as_mask(Player::Black),
         }
-        self
     }
 
-    pub fn switch(&mut self, from: &Coordinate, to: &Coordinate) -> &mut Self {
+    pub fn switch(&mut self, from: &Coordinate, to: &Coordinate) {
         let source = self.get(from);
         let destination = self.get(to);
-        self.place(from, destination)
-            .place(to, source)
+        self.place(from, destination);
+        self.place(to, source);
     }
 }

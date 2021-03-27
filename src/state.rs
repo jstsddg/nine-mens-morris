@@ -39,23 +39,22 @@ impl Display for State {
 impl State {
     pub fn new() -> State {
         let mut state = State(0);
-        state.set_stash(9, Player::White).set_stash(9, Player::Black);
+        state.set_stash(9, Player::White);
+        state.set_stash(9, Player::Black);
         state
     }
 
-    pub fn set_stash(&mut self, stones: u64, player: Player) -> &mut Self {
+    pub fn set_stash(&mut self, stones: u64, player: Player) {
         self.0 &= !mask_stash(player);
         self.0 |= stones << offset_stash(player);
-        self
     }
 
     pub fn get_stash(&self, player: Player) -> u64 {
         (self.0 & mask_stash(player)) >> offset_stash(player)
     }
 
-    pub fn decrement_stash(&mut self, player: Player) -> &mut Self {
+    pub fn decrement_stash(&mut self, player: Player) {
         self.0 -= 1 << offset_stash(player);
-        self
     }
 
     pub fn has_stash(&self, player: Player) -> bool {
