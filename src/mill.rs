@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{cell::Cell, coordinate::Coordinate, masks::{MASK_MILLS, offset_board}, player::Player, state::State};
+use crate::{cell::Cell, coordinate::Coordinate, masks::{MASK_MILLS, mask_board, offset_board}, player::Player, state::State};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Mill(usize);
@@ -35,25 +35,22 @@ impl State {
             .collect()
     }
 
-    pub fn get_mills_cells(&self, player: Player) -> Vec<Coordinate> {
-        self.get_mills(player).iter()
-            .map(|mill| mill.get_coordinates())
-            .flatten()
-            .collect()
-    }
+    pub fn get_poundable_stones(&self, player: Player) -> Vec<Coordinate> {
+        let mut bits = self.0 & mask_board(player);
+        // Remove all mills from the board
+        for mill in self.get_mills(player) {
+            bits ^= mill.as_mask(player);
+        }
 
-    pub fn get_poundable_cells(&self, player: Player) -> HashSet<Coordinate> {
-        let stones_placed: HashSet<_> = self.get_cells(player.into()).into_iter().collect();
-        let stones_mills:  HashSet<_> = self.get_mills_cells(player).into_iter().collect();
-        
-        if stones_placed.len() == stones_mills.len() {
-            stones_placed
+        // Check if any stones are left
+        if bits == 0 {
+            bits = self.0 & mask_board(player);
         }
-        else {
-            stones_placed.into_iter()
-                .filter(|coordinate| !stones_mills.contains(coordinate))
-                .collect()
-        }
+
+        (0..24)
+            .map(|index| Coordinate::new_index(index))
+            .filter(|coordinate| (coordinate.as_mask(player) & bits) != 0)
+            .collect()
     }
 
     pub fn pound_stones(&self, opponent: Player, count: usize) -> HashSet<State> {
@@ -61,7 +58,7 @@ impl State {
             return vec![self.clone()].into_iter().collect();
         }
 
-        self.get_poundable_cells(opponent).into_iter()
+        self.get_poundable_stones(opponent).into_iter()
             .map(|coordinate| -> State {
                 let mut state = self.clone();
                 state.place(&coordinate, Cell::Empty);
