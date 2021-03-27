@@ -24,8 +24,6 @@ impl Mill {
 }
 
 impl State {
-
-
     pub fn has_mill(&self, player: Player, mill: &Mill) -> bool {
         (self.0 & mill.as_mask(player)) ^ mill.as_mask(player) == 0
     }

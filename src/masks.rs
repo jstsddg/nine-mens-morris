@@ -1,11 +1,11 @@
 use crate::player::Player;
 
-const BITS_BOARD: u64 = 24;
-const BITS_STASH: u64 = 4;
-const OFFSET_BOARD_WHITE: u64 = BITS_BOARD;
-const OFFSET_BOARD_BLACK: u64 = 0;
-const OFFSET_STASH_WHITE: u64 = 2*BITS_BOARD+BITS_STASH;
-const OFFSET_STASH_BLACK: u64 = 2*BITS_BOARD;
+const BITS_BOARD: u8 = 24;
+const BITS_STASH: u8 = 4;
+const OFFSET_BOARD_WHITE: u8 = BITS_BOARD;
+const OFFSET_BOARD_BLACK: u8 = 0;
+const OFFSET_STASH_WHITE: u8 = 2*BITS_BOARD+BITS_STASH;
+const OFFSET_STASH_BLACK: u8 = 2*BITS_BOARD;
 const MASK_STASH_WHITE: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD+BITS_STASH);
 const MASK_STASH_BLACK: u64 = ((1 << BITS_STASH) - 1) << (2*BITS_BOARD);
 const MASK_BOARD_BLACK: u64 = (1 << BITS_BOARD) - 1;
@@ -44,14 +44,14 @@ pub fn mask_stash(player: Player) -> u64 {
     }
 }
 
-pub fn offset_board(player: Player) -> u64 {
+pub fn offset_board(player: Player) -> u8 {
     match player {
         Player::White => OFFSET_BOARD_WHITE,
         Player::Black => OFFSET_BOARD_BLACK,
     }
 }
 
-pub fn offset_stash(player: Player) -> u64 {
+pub fn offset_stash(player: Player) -> u8 {
     match player {
         Player::White => OFFSET_STASH_WHITE,
         Player::Black => OFFSET_STASH_BLACK,

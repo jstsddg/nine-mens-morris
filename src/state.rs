@@ -44,13 +44,13 @@ impl State {
         state
     }
 
-    pub fn set_stash(&mut self, stones: u64, player: Player) {
+    pub fn set_stash(&mut self, stones: u8, player: Player) {
         self.0 &= !mask_stash(player);
-        self.0 |= stones << offset_stash(player);
+        self.0 |= (stones as u64) << offset_stash(player);
     }
 
-    pub fn get_stash(&self, player: Player) -> u64 {
-        (self.0 & mask_stash(player)) >> offset_stash(player)
+    pub fn get_stash(&self, player: Player) -> u8 {
+        ((self.0 & mask_stash(player)) >> offset_stash(player)) as u8
     }
 
     pub fn decrement_stash(&mut self, player: Player) {
@@ -61,8 +61,8 @@ impl State {
         (self.0 & mask_stash(player)) != 0
     }
 
-    pub fn count_stones(&self, player: Player) -> u64 {
-        (self.0 & mask_board(player)).count_ones().into()
+    pub fn count_stones(&self, player: Player) -> u8 {
+        (self.0 & mask_board(player)).count_ones() as u8
     }
 
     pub fn has_enough_stones(&self, player: Player) -> bool {
