@@ -66,10 +66,8 @@ impl State {
         }
     }
 
-    pub fn switch(&mut self, from: &Coordinate, to: &Coordinate) {
-        let source = self.get(from);
-        let destination = self.get(to);
-        self.place(from, destination);
-        self.place(to, source);
+    pub fn move_to(&mut self, from: &Coordinate, to: &Coordinate, player: Player) {
+        self.place(from, Cell::Empty);
+        self.place(to, player.into());
     }
 }

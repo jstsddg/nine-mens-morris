@@ -31,7 +31,7 @@ impl State {
                         cells_empty.iter()
                             .flat_map(|to| {
                                 let mut state = self.clone();
-                                state.switch(from, to);
+                                state.move_to(from, to, player);
                                 state.pound_mills(player, &mills_before)
                             })
                             .collect()
