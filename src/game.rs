@@ -47,18 +47,18 @@ impl State {
         || self.next_states(player).is_empty()
     }
 
-    pub fn utility(&self, player: Player) -> f32 {
+    pub fn utility(&self, player: Player) -> i16 {
         if self.has_enough_stones(player) {
-            -1.0
+            -100
         }
         else if self.has_enough_stones(player.opponent()) {
-            1.0
+            100
         }
         else if self.next_states(player).is_empty() {
-            -1.0
+            -100
         }
         else {
-            0.0
+            0
         }
     }
 }
