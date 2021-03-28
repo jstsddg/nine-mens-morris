@@ -33,9 +33,9 @@ pub struct AlphaBetaPruning {
     options: AlphaBetaPruningOptions,
 }
 
-enum CacheHit {
-    Valid { value: i16 },
-    Invalid { alpha: i16, beta: i16 },
+enum Cache {
+    Hit(i16),
+    Miss(i16, i16),
 }
 
 impl AlphaBetaPruning {
@@ -47,23 +47,19 @@ impl AlphaBetaPruning {
         }
     }
 
-    fn get_cache(&self, state: &State, player: Player, alpha: i16, beta: i16, limit: u8) -> Option<CacheHit> {
+    fn get_cache(&self, state: &State, player: Player, alpha: i16, beta: i16, limit: u8) -> Cache {
         if !self.options.cache {
-            return None
+            return Cache::Miss(alpha, beta)
         }
 
-        match self.cache.get(&(state.clone(), player, limit)) {
-            Some((value, cache_alpha, cache_beta)) => {
-                Some(if cache_alpha <= &alpha && &beta <= cache_beta {
-                    CacheHit::Valid { value: *value }
-                } else {
-                    CacheHit::Invalid {
-                        alpha: alpha.min(*cache_alpha),
-                        beta: beta.max(*cache_beta),
-                    }
-                })
+        if let Some((value, cache_alpha, cache_beta)) = self.cache.get(&(state.clone(), player, limit)) {
+            if cache_alpha <= &alpha && &beta <= cache_beta {
+                Cache::Hit(*value)
+            } else {
+                Cache::Miss(alpha.min(*cache_alpha), beta.max(*cache_beta))
             }
-            None => None,
+        } else {
+            Cache::Miss(alpha, beta)
         }
     }
 
@@ -76,13 +72,11 @@ impl AlphaBetaPruning {
     fn value(&mut self, state: &State, player: Player, mut alpha: i16, mut beta: i16, limit: u8) -> i16 {
         self.visited += 1;
 
-        if let Some(cache) = self.get_cache(state, player, alpha, beta, limit) {
-            match cache {
-                CacheHit::Valid { value} => return value,
-                CacheHit::Invalid { alpha: cache_alpha, beta: cache_beta } => {
-                    alpha = cache_alpha;
-                    beta = cache_beta;
-                }
+        match self.get_cache(state, player, alpha, beta, limit) {
+            Cache::Hit(value) => return value,
+            Cache::Miss(new_alpha, new_beta) => {
+                alpha = new_alpha;
+                beta = new_beta;
             }
         }
         
