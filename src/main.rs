@@ -9,7 +9,7 @@ mod heuristic;
 mod game;
 mod minimax;
 
-use minimax::{MinimaxOptions, minimax};
+use minimax::{Minimax, MinimaxOptions};
 use player::Player;
 use state::State;
 
@@ -18,9 +18,10 @@ fn main() {
         limit: 5,
         ..Default::default()
     };
+    let mut minimax = Minimax::new(options.clone());
     println!(
         "{:?}\n{:?}",
         options,
-        minimax(State::new(), Player::White, options.clone())
+        minimax.minimax(State::new(), Player::White)
     );
 }

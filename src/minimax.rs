@@ -27,15 +27,15 @@ impl Default for MinimaxOptions {
     }
 }
 
-struct MinimaxRuntime {
+pub struct Minimax {
     cache: HashMap<(State, Player, u8), i16>,
     visited: u32,
     options: MinimaxOptions,
 }
 
-impl MinimaxRuntime {
-    fn new(options: MinimaxOptions) -> Self {
-        MinimaxRuntime {
+impl Minimax {
+    pub fn new(options: MinimaxOptions) -> Self {
+        Minimax {
             cache: HashMap::new(),
             visited: 0,
             options: options
@@ -76,25 +76,25 @@ impl MinimaxRuntime {
             .expect("next_state was empty, but finished was false");
         self.set_cache(state, player, limit, value)
     }
-}
 
-pub fn minimax(state: State, player: Player, options: MinimaxOptions) -> MinimaxResult {
-    let mut runtime = MinimaxRuntime::new(options);
+    pub fn minimax(&mut self, state: State, player: Player) -> MinimaxResult {
+        self.visited = 0;
 
-    let values: Vec<(i16, State)> = state.next_states(player).into_iter()
-        .map(|s| (runtime.value(&s, player, runtime.options.limit), s))
-        .collect();
-    let max = values.iter()
-        .map(|value| value.0)
-        .max().expect("Unable to find maximum");
-    let states = values.into_iter()
-        .filter(|value| value.0 == max)
-        .map(|value| value.1)
-        .collect();
+        let values: Vec<(i16, State)> = state.next_states(player).into_iter()
+            .map(|s| (self.value(&s, player, self.options.limit), s))
+            .collect();
+        let max = values.iter()
+            .map(|value| value.0)
+            .max().expect("Unable to find maximum");
+        let states = values.into_iter()
+            .filter(|value| value.0 == max)
+            .map(|value| value.1)
+            .collect();
 
-    MinimaxResult {
-        states: states,
-        visited: runtime.visited,
-        value: max,
+        MinimaxResult {
+            states: states,
+            visited: self.visited,
+            value: max,
+        }
     }
 }
