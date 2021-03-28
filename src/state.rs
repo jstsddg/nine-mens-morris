@@ -11,6 +11,12 @@ impl Into<u64> for &State {
     }
 }
 
+impl From<u64> for State {
+    fn from(from: u64) -> Self {
+        State(from)
+    }
+}
+
 impl Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut blueprint = String::from("
@@ -22,10 +28,10 @@ impl Display for State {
             | O---N---M |
             G-----F-----E
         ");
-        for i in 0..24 {
+        for index in 0..24 {
             blueprint = blueprint.replace(
-                (0x41 as u8 + i) as char,
-                (&self.get(&Coordinate::new_index(i.into()))).into()
+                (0x41 as u8 + index) as char,
+                (&self.get(&Coordinate::from(index))).into()
             );
         }
         blueprint = blueprint.replace("*1", &self.get_stash(Player::White).to_string());

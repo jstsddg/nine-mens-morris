@@ -10,28 +10,39 @@ impl State {
 
                 let mills_before = clone.get_mills(player);
 
-                clone.get_cells(Cell::Empty).iter()
+                clone.get_cells(Cell::Empty).into_iter()
                     .flat_map(|coordinate| {
                         let mut state = clone.clone();
-                        state.place(coordinate, player.into());
+                        state.place(&coordinate, player.into());
                         state.pound_mills(player, &mills_before)
                     })
                     .collect()
             },
             Phase::Moving => {
-                vec![]
+                let mills_before = self.get_mills(player);
+
+                self.get_cells(player.into()).into_iter()
+                    .flat_map(|from| -> Vec<State> {
+                        self.get_neighbours(&from, Cell::Empty).into_iter()
+                            .flat_map(|to| {
+                                let mut state = self.clone();
+                                state.move_to(&from, &to, player);
+                                state.pound_mills(player, &mills_before)
+                            })
+                            .collect()
+                    })
+                    .collect()
             },
             Phase::Flying => {
                 let mills_before = self.get_mills(player);
                 let cells_empty = self.get_cells(Cell::Empty);
-                
 
-                self.get_cells(player.into()).iter()
+                self.get_cells(player.into()).into_iter()
                     .flat_map(|from| -> Vec<State> {
                         cells_empty.iter()
                             .flat_map(|to| {
                                 let mut state = self.clone();
-                                state.move_to(from, to, player);
+                                state.move_to(&from, &to, player);
                                 state.pound_mills(player, &mills_before)
                             })
                             .collect()

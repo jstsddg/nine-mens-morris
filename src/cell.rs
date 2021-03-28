@@ -50,8 +50,14 @@ impl State {
 
     pub fn get_cells(&self, cell: Cell) -> Vec<Coordinate> {
         (0..24)
-            .map(|index| Coordinate::new_index(index))
+            .map(|index| Coordinate::from(index))
             .filter(|coordinate| self.get(coordinate) == cell)
+            .collect()
+    }
+
+    pub fn get_neighbours(&self, coordinate: &Coordinate, cell: Cell) -> Vec<Coordinate> {
+        coordinate.neighbours().into_iter()
+            .filter(|c| self.get(c) == cell)
             .collect()
     }
 

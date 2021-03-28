@@ -16,8 +16,8 @@ impl Mill {
 
     pub fn get_coordinates(&self) -> Vec<Coordinate> {
         (0..24)
-            .filter(|i| self.as_mask(Player::Black) & (1 << i) != 0)
-            .map(|i| Coordinate::new_index(i))
+            .filter(|index| self.as_mask(Player::Black) & (1 << index) != 0)
+            .map(|index| Coordinate::from(index))
             .take(3)
             .collect()
     }
@@ -48,7 +48,7 @@ impl State {
         }
 
         (0..24)
-            .map(|index| Coordinate::new_index(index))
+            .map(|index| Coordinate::from(index))
             .filter(|coordinate| (coordinate.as_mask(player) & bits) != 0)
             .collect()
     }
