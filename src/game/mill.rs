@@ -1,6 +1,6 @@
-use std::collections::HashSet;
+use std::{collections::HashSet};
 
-use crate::{cell::Cell, coordinate::Coordinate, masks::{MASK_MILLS, mask_board, offset_board}, player::Player, state::State};
+use super::{cell::Cell, coordinate::Coordinate, masks::{MASK_MILLS, mask_board, offset_board}, player::Player, state::State};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Mill(usize);

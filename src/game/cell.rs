@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{coordinate::Coordinate, player::Player, state::State};
+use super::{coordinate::Coordinate, player::Player, state::State};
 
 #[derive(PartialEq)]
 pub enum Cell {

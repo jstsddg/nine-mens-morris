@@ -1,19 +1,8 @@
-mod cell;
-mod coordinate;
-mod player;
-mod masks;
-mod mill;
-mod state;
-mod phase;
-mod heuristic;
 mod game;
-mod minimax;
-mod alpha_beta_pruning;
+mod artificial_intelligence;
 
-use alpha_beta_pruning::{AlphaBetaPruning, AlphaBetaPruningOptions};
-use minimax::{Minimax, MinimaxOptions};
-use player::Player;
-use state::State;
+use artificial_intelligence::{alpha_beta_pruning::{AlphaBetaPruning, AlphaBetaPruningOptions}, minimax::{Minimax, MinimaxOptions}};
+use game::{player::Player, state::State};
 
 fn main() {
     minimax();

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{masks::offset_board, player::Player};
+use super::{masks::offset_board, player::Player};
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct Coordinate(u8);

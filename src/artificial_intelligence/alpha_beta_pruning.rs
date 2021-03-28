@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{heuristic::HeuristicWeights, player::Player, state::State};
-
+use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
 #[derive(Debug)]
 pub struct AlphaBetaPruningResult {

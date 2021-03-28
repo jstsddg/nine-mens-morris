@@ -1,4 +1,5 @@
-use crate::player::Player;
+use super::player::Player;
+
 
 const BITS_BOARD: u8 = 24;
 const BITS_STASH: u8 = 4;

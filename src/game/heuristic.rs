@@ -1,4 +1,4 @@
-use crate::{player::Player, state::State};
+use super::{player::Player, state::State};
 
 #[derive(Debug, Clone)]
 pub struct HeuristicWeights {

@@ -1,6 +1,7 @@
 use std::{fmt::Display};
 
-use crate::{coordinate::Coordinate, masks::{mask_board, mask_stash, offset_stash}, player::Player};
+use super::{masks::{mask_board, mask_stash, offset_stash}, player::Player, coordinate::Coordinate};
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State(pub u64);

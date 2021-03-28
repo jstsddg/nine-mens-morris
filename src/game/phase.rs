@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{player::Player, state::State};
+use super::{player::Player, state::State};
 
 
 pub enum Phase {

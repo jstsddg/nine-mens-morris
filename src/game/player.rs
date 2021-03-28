@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::cell::Cell;
+use super::cell::Cell;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Player {
