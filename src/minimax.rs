@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{player::Player, state::State};
+use crate::{heuristic::HeuristicWeights, player::Player, state::State};
 
 
 #[derive(Debug)]
@@ -14,10 +14,21 @@ pub struct MinimaxResult {
 pub struct MinimaxOptions {
     pub cache: bool,
     pub limit: u8,
+    pub weights: HeuristicWeights,
+}
+
+impl Default for MinimaxOptions {
+    fn default() -> Self {
+        MinimaxOptions {
+            cache: true,
+            limit: 3,
+            weights: Default::default(),
+        }
+    }
 }
 
 struct MinimaxRuntime {
-    cache: HashMap<State, i16>,
+    cache: HashMap<(State, Player, u8), i16>,
     visited: u32,
     options: MinimaxOptions,
 }
@@ -31,16 +42,16 @@ impl MinimaxRuntime {
         }
     }
 
-    fn get_cache(&self, state: &State, _player: Player, _limit: u8) -> Option<&i16> {
+    fn get_cache(&self, state: &State, player: Player, limit: u8) -> Option<&i16> {
         match self.options.cache {
-            true => self.cache.get(state),
+            true => self.cache.get(&(state.clone(), player, limit)),
             false => None,
         }
     }
 
-    fn set_cache(&mut self, state: &State, _player: Player, _limit: u8, value: i16) -> i16 {
+    fn set_cache(&mut self, state: &State, player: Player, limit: u8, value: i16) -> i16 {
         if self.options.cache {
-            self.cache.insert(state.clone(), value);
+            self.cache.insert((state.clone(), player, limit), value);
         }
         value
     }
@@ -56,7 +67,7 @@ impl MinimaxRuntime {
             return state.utility(player);
         }
         if limit == 0 {
-            return state.heuristic(player);
+            return state.heuristic(player, &self.options.weights);
         }
 
         let value = state.next_states(player).iter()

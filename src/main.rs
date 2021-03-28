@@ -15,8 +15,8 @@ use state::State;
 
 fn main() {
     let options = MinimaxOptions {
-        cache: true,
-        limit: 3,
+        limit: 5,
+        ..Default::default()
     };
     println!(
         "{:?}\n{:?}",

@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::cell::Cell;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Player {
     White,
     Black

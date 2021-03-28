@@ -20,8 +20,8 @@ impl From<u64> for State {
 impl Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut blueprint = String::from("
-            A-----B-----C  white: *1 (*3 with *5)
-            | I---J---K |  black: *2 (*4 with *6)
+            A-----B-----C  white: *1
+            | I---J---K |  black: *2
             | | Q-R-S | |
             H-P-X   T-L-D
             | | W-V-U | |
@@ -36,11 +36,7 @@ impl Display for State {
         }
         blueprint = blueprint.replace("*1", &self.get_stash(Player::White).to_string());
         blueprint = blueprint.replace("*2", &self.get_stash(Player::Black).to_string());
-        blueprint = blueprint.replace("*3", &self.phase(Player::White).to_string());
-        blueprint = blueprint.replace("*4", &self.phase(Player::Black).to_string());
-        blueprint = blueprint.replace("*5", &self.heuristic(Player::White).to_string());
-        blueprint = blueprint.replace("*6", &self.heuristic(Player::Black).to_string());
-        write!(f, "{}{:#64b}", blueprint, self.0)
+        write!(f, "{}", blueprint)
     }
 }
 
