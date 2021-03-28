@@ -49,11 +49,10 @@ impl Minimax {
         }
     }
 
-    fn set_cache(&mut self, state: &State, player: Player, limit: u8, value: i16) -> i16 {
+    fn set_cache(&mut self, state: &State, player: Player, limit: u8, value: i16) {
         if self.options.cache {
             self.cache.insert((state.clone(), player, limit), value);
         }
-        value
     }
 
     fn value(&mut self, state: &State, player: Player, limit: u8) -> i16 {
@@ -71,10 +70,12 @@ impl Minimax {
         }
 
         let value = state.next_states(player).iter()
-            .map(|s| self.value(s, player.opponent(), limit-1))
+            .map(|s| -self.value(s, player.opponent(), limit-1))
             .max()
             .expect("next_state was empty, but finished was false");
-        self.set_cache(state, player, limit, value)
+        self.set_cache(state, player, limit, value);
+
+        value
     }
 
     pub fn minimax(&mut self, state: State, player: Player) -> MinimaxResult {
