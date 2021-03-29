@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
+use super::{ArtificialIntelligence, ArtificialIntelligenceResult};
+
 #[derive(Debug)]
 pub struct AlphaBetaPruningResult {
     states: Vec<State>,
@@ -102,8 +104,10 @@ impl AlphaBetaPruning {
         self.set_cache(state, player, limit, value, alpha, beta);
         value
     }
+}
 
-    pub fn alpha_beta_pruning(&mut self, state: State, player: Player) -> AlphaBetaPruningResult {
+impl ArtificialIntelligence for AlphaBetaPruning {
+    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult {
         self.visited = 0;
 
         let values: Vec<(i16, State)> = state.next_states(player).into_iter()
@@ -117,7 +121,7 @@ impl AlphaBetaPruning {
             .map(|value| value.1)
             .collect();
 
-        AlphaBetaPruningResult {
+        ArtificialIntelligenceResult {
             states: states,
             visited: self.visited,
             value: max,

@@ -2,14 +2,8 @@ use std::collections::HashMap;
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
+use super::{ArtificialIntelligence, ArtificialIntelligenceResult};
 
-
-#[derive(Debug)]
-pub struct MinimaxResult {
-    states: Vec<State>,
-    value: i16,
-    visited: u32,
-}
 
 #[derive(Debug, Clone)]
 pub struct MinimaxOptions {
@@ -78,8 +72,10 @@ impl Minimax {
 
         value
     }
+}
 
-    pub fn minimax(&mut self, state: State, player: Player) -> MinimaxResult {
+impl ArtificialIntelligence for Minimax {
+    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult {
         self.visited = 0;
 
         let values: Vec<(i16, State)> = state.next_states(player).into_iter()
@@ -93,7 +89,7 @@ impl Minimax {
             .map(|value| value.1)
             .collect();
 
-        MinimaxResult {
+        ArtificialIntelligenceResult {
             states: states,
             visited: self.visited,
             value: max,

@@ -1,7 +1,7 @@
 mod game;
 mod artificial_intelligence;
 
-use artificial_intelligence::{alpha_beta_pruning::{AlphaBetaPruning, AlphaBetaPruningOptions}, minimax::{Minimax, MinimaxOptions}};
+use artificial_intelligence::{ArtificialIntelligence, alpha_beta_pruning::{AlphaBetaPruning, AlphaBetaPruningOptions}, minimax::{Minimax, MinimaxOptions}};
 use game::{player::Player, state::State};
 
 fn main() {
@@ -14,11 +14,11 @@ fn minimax() {
         limit: 5,
         ..Default::default()
     };
-    let mut minimax = Minimax::new(options.clone());
+    let mut ai = Minimax::new(options.clone());
     println!(
         "{:?}\n{:?}",
         options,
-        minimax.minimax(State::new(), Player::White)
+        ai.best_moves(State::new(), Player::White)
     );
 }
 
@@ -27,10 +27,10 @@ fn alpha_beta_pruning() {
         limit: 5,
         ..Default::default()
     };
-    let mut alpha_beta_pruning = AlphaBetaPruning::new(options.clone());
+    let mut ai = AlphaBetaPruning::new(options.clone());
     println!(
         "{:?}\n{:?}",
         options,
-        alpha_beta_pruning.alpha_beta_pruning(State::new(), Player::White)
+        ai.best_moves(State::new(), Player::White)
     );
 }
