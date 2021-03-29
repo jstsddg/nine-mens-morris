@@ -4,7 +4,7 @@ use super::{masks::{mask_board, mask_stash, offset_stash}, player::Player, coord
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct State(pub u64);
+pub struct State(pub(super) u64);
 
 impl Into<u64> for &State {
     fn into(self) -> u64 {

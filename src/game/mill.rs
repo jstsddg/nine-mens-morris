@@ -28,10 +28,22 @@ impl State {
         (self.0 & mill.as_mask(player)) ^ mill.as_mask(player) == 0
     }
 
+    pub fn has_uncompleted_mill(&self, player: Player, mill: &Mill) -> bool {
+        (self.0 & mill.as_mask(player.opponent())) == 0
+        && (self.0 & mill.as_mask(player)).count_ones() == 2
+    }
+
     pub fn get_mills(&self, player: Player) -> Vec<Mill> {
         (0..16)
             .map(|index| Mill::new(index))
             .filter(|mill| self.has_mill(player, &mill))
+            .collect()
+    }
+
+    pub fn get_uncompleted_mills(&self, player: Player) -> Vec<Mill> {
+        (0..16)
+            .map(|index| Mill::new(index))
+            .filter(|mill| self.has_uncompleted_mill(player, &mill))
             .collect()
     }
 
