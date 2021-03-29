@@ -17,7 +17,8 @@ pub struct AlphaBetaPruningOptions {
     pub limit: u8,
     pub weights: HeuristicWeights,
     pub move_ordering: bool,
-    pub move_ordering_offset: u8
+    pub move_ordering_offset: u8,
+    pub iterative_deepening: bool,
 }
 
 impl Default for AlphaBetaPruningOptions {
@@ -28,6 +29,7 @@ impl Default for AlphaBetaPruningOptions {
             weights: Default::default(),
             move_ordering: true,
             move_ordering_offset: 3,
+            iterative_deepening: true,
         }
     }
 }
@@ -79,7 +81,7 @@ impl AlphaBetaPruning {
             next_states.sort_by_cached_key(|state| {
                 Reverse(self.cache.get(&(state.clone(), player, limit-self.options.move_ordering_offset))
                     .unwrap_or(&(0, 0, 0)).0)
-            }); 
+            });
         }
         next_states
     }
@@ -124,15 +126,25 @@ impl ArtificialIntelligence for AlphaBetaPruning {
     fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult {
         self.visited = 0;
 
-        let values: Vec<(i16, State)> = state.next_states(player).into_iter()
-            .map(|s| (self.value(&s, player, -100, 100, self.options.limit), s))
-            .collect();
+        let start = if self.options.iterative_deepening { 0 } else { self.options.limit };
+
+        let next_states = state.next_states(player);
+
+        let values = (start..=self.options.limit).into_iter()
+            .map(|limit| -> Vec<(i16, &State)> {
+                next_states.iter()
+                    .map(|s| (self.value(s, player, -100, 100, limit), s))
+                    .collect()
+            })
+            .last()
+            .expect("No value after iterative deepening");
+         
         let max = values.iter()
             .map(|value| value.0)
             .max().expect("Unable to find maximum");
         let states = values.into_iter()
             .filter(|value| value.0 == max)
-            .map(|value| value.1)
+            .map(|value| value.1.clone())
             .collect();
 
         ArtificialIntelligenceResult {
