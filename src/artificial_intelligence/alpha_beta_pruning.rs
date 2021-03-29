@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cmp::Reverse, collections::HashMap};
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
@@ -16,6 +16,8 @@ pub struct AlphaBetaPruningOptions {
     pub cache: bool,
     pub limit: u8,
     pub weights: HeuristicWeights,
+    pub move_ordering: bool,
+    pub move_ordering_offset: u8
 }
 
 impl Default for AlphaBetaPruningOptions {
@@ -24,6 +26,8 @@ impl Default for AlphaBetaPruningOptions {
             cache: true,
             limit: 3,
             weights: Default::default(),
+            move_ordering: true,
+            move_ordering_offset: 3,
         }
     }
 }
@@ -70,6 +74,16 @@ impl AlphaBetaPruning {
         }
     }
 
+    fn order_moves(&self, mut next_states: Vec<State>, player: Player, limit: u8) -> Vec<State> {
+        if self.options.move_ordering {
+            next_states.sort_by_cached_key(|state| {
+                Reverse(self.cache.get(&(state.clone(), player, limit-self.options.move_ordering_offset))
+                    .unwrap_or(&(0, 0, 0)).0)
+            }); 
+        }
+        next_states
+    }
+
     fn value(&mut self, state: &State, player: Player, mut alpha: i16, mut beta: i16, limit: u8) -> i16 {
         self.visited += 1;
 
@@ -89,7 +103,7 @@ impl AlphaBetaPruning {
         }
 
         let mut value = alpha;
-        for next_state in state.next_states(player) {
+        for next_state in self.order_moves(state.next_states(player), player, limit) {
             value = value.max(
                 -self.value(&next_state, player.opponent(), -beta, -alpha, limit - 1)
             );
