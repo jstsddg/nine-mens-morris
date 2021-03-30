@@ -4,12 +4,14 @@ pub mod minimax;
 pub mod alpha_beta_pruning;
 
 pub trait ArtificialIntelligence {
-    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult;
+    type Counter;
+
+    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult<Self::Counter>;
 }
 
 #[derive(Debug)]
-pub struct ArtificialIntelligenceResult {
+pub struct ArtificialIntelligenceResult<Counter> {
     states: Vec<State>,
-    visited: u32,
     value: i16,
+    counter: Counter,
 }

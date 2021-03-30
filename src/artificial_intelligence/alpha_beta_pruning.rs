@@ -1,14 +1,28 @@
-use std::{cmp::Reverse, collections::HashMap};
+use std::{collections::HashMap};
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
 use super::{ArtificialIntelligence, ArtificialIntelligenceResult};
 
-#[derive(Debug)]
-pub struct AlphaBetaPruningResult {
-    states: Vec<State>,
-    value: i16,
-    visited: u32,
+#[derive(Debug, Clone, Copy)]
+pub struct Counter {
+    visisted: u32,
+    cache_hit: u32,
+    cache_miss: u32,
+    move_ordering_hit: u32,
+    move_ordering_miss: u32,
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter {
+            visisted: 0,
+            cache_hit: 0,
+            cache_miss: 0,
+            move_ordering_hit: 0,
+            move_ordering_miss: 0,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -28,7 +42,7 @@ impl Default for AlphaBetaPruningOptions {
             limit: 3,
             weights: Default::default(),
             move_ordering: true,
-            move_ordering_offset: 3,
+            move_ordering_offset: 1,
             iterative_deepening: true,
         }
     }
@@ -36,7 +50,7 @@ impl Default for AlphaBetaPruningOptions {
 
 pub struct AlphaBetaPruning {
     cache: HashMap<(State, Player, u8), (i16, i16, i16)>,
-    visited: u32,
+    counter: Counter,
     options: AlphaBetaPruningOptions,
 }
 
@@ -49,8 +63,8 @@ impl AlphaBetaPruning {
     pub fn new(options: AlphaBetaPruningOptions) -> Self {
         AlphaBetaPruning {
             cache: HashMap::new(),
-            visited: 0,
-            options: options
+            counter: Counter::new(),
+            options: options,
         }
     }
 
@@ -76,22 +90,31 @@ impl AlphaBetaPruning {
         }
     }
 
-    fn order_moves(&self, mut next_states: Vec<State>, player: Player, limit: u8) -> Vec<State> {
-        if self.options.move_ordering {
+    fn order_moves(&mut self, mut next_states: Vec<State>, player: Player, limit: u8) -> Vec<State> {
+        if self.options.move_ordering && limit >= self.options.move_ordering_offset {
             next_states.sort_by_cached_key(|state| {
-                Reverse(self.cache.get(&(state.clone(), player, limit-self.options.move_ordering_offset))
-                    .unwrap_or(&(0, 0, 0)).0)
+                if let Some(cache) = self.cache.get(&(state.clone(), player.opponent(), limit-self.options.move_ordering_offset)) {
+                    self.counter.move_ordering_hit += 1;
+                    cache.0
+                } else {
+                    self.counter.move_ordering_miss += 1;
+                    0
+                }
             });
         }
         next_states
     }
 
     fn value(&mut self, state: &State, player: Player, mut alpha: i16, mut beta: i16, limit: u8) -> i16 {
-        self.visited += 1;
+        self.counter.visisted += 1;
 
         match self.get_cache(state, player, alpha, beta, limit) {
-            Cache::Hit(value) => return value,
+            Cache::Hit(value) => {
+                self.counter.cache_hit += 1;
+                return value
+            },
             Cache::Miss(new_alpha, new_beta) => {
+                self.counter.cache_miss += 1;
                 alpha = new_alpha;
                 beta = new_beta;
             }
@@ -123,8 +146,10 @@ impl AlphaBetaPruning {
 }
 
 impl ArtificialIntelligence for AlphaBetaPruning {
-    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult {
-        self.visited = 0;
+    type Counter = Counter;
+
+    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult<Counter> {
+        self.counter = Counter::new();
 
         let start = if self.options.iterative_deepening { 0 } else { self.options.limit };
 
@@ -149,8 +174,8 @@ impl ArtificialIntelligence for AlphaBetaPruning {
 
         ArtificialIntelligenceResult {
             states: states,
-            visited: self.visited,
             value: max,
+            counter: self.counter.clone(),
         }
     }
 }
