@@ -5,6 +5,9 @@ use artificial_intelligence::{ArtificialIntelligence, alpha_beta_pruning::{Alpha
 use game::{player::Player, state::State};
 
 fn main() {
+    let state = State::from(43100855922065416);
+    println!("{}", state);
+
     minimax();
     alpha_beta_pruning();
 }
@@ -15,10 +18,12 @@ fn minimax() {
         ..Default::default()
     };
     let mut ai = Minimax::new(options.clone());
+    let moves = ai.best_moves(State::new(), Player::White);
     println!(
-        "{:?}\n{:?}",
+        "{:?}\n{:?} with {:?}",
         options,
-        ai.best_moves(State::new(), Player::White)
+        moves.states(),
+        moves.value()
     );
 }
 
@@ -28,9 +33,11 @@ fn alpha_beta_pruning() {
         ..Default::default()
     };
     let mut ai = AlphaBetaPruning::new(options.clone());
+    let moves = ai.best_moves(State::new(), Player::White);
     println!(
-        "{:?}\n{:?}",
+        "{:?}\n{:?} with {:?}",
         options,
-        ai.best_moves(State::new(), Player::White)
+        moves.states(),
+        moves.value()
     );
 }

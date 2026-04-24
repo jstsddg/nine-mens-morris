@@ -2,8 +2,9 @@ use std::{collections::HashMap};
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
-use super::{ArtificialIntelligence, ArtificialIntelligenceResult};
+use super::{ArtificialIntelligence, BestMoves};
 
+#[cfg(feature = "counter")]
 #[derive(Debug, Clone, Copy)]
 pub struct Counter {
     visisted: u32,
@@ -13,6 +14,7 @@ pub struct Counter {
     move_ordering_miss: u32,
 }
 
+#[cfg(feature = "counter")]
 impl Counter {
     fn new() -> Counter {
         Counter {
@@ -22,6 +24,31 @@ impl Counter {
             move_ordering_hit: 0,
             move_ordering_miss: 0,
         }
+    }
+}
+
+struct AlphaBetaPruningBestMoves {
+    states: Vec<State>,
+    value: i16,
+
+    #[cfg(feature = "counter")]
+    counter: Counter,
+}
+
+impl BestMoves for AlphaBetaPruningBestMoves {
+    fn states(&self) -> Vec<&State> {
+        self.states.iter().collect()
+    }
+
+    fn value(&self) -> i16 {
+        self.value
+    }
+}
+
+#[cfg(feature = "counter")]
+impl AlphaBetaPruningBestMoves {
+    pub fn counter(&self) -> Counter {
+        self.counter
     }
 }
 
@@ -50,8 +77,10 @@ impl Default for AlphaBetaPruningOptions {
 
 pub struct AlphaBetaPruning {
     cache: HashMap<(State, Player, u8), (i16, i16, i16)>,
-    counter: Counter,
     options: AlphaBetaPruningOptions,
+
+    #[cfg(feature = "counter")]
+    counter: Counter,
 }
 
 enum Cache {
@@ -63,8 +92,10 @@ impl AlphaBetaPruning {
     pub fn new(options: AlphaBetaPruningOptions) -> Self {
         AlphaBetaPruning {
             cache: HashMap::new(),
-            counter: Counter::new(),
             options: options,
+
+            #[cfg(feature = "counter")]
+            counter: Counter::new(),
         }
     }
 
@@ -94,10 +125,10 @@ impl AlphaBetaPruning {
         if self.options.move_ordering && limit >= self.options.move_ordering_offset {
             next_states.sort_by_cached_key(|state| {
                 if let Some(cache) = self.cache.get(&(state.clone(), player.opponent(), limit-self.options.move_ordering_offset)) {
-                    self.counter.move_ordering_hit += 1;
+                    increment!(self.counter.move_ordering_hit);
                     cache.0
                 } else {
-                    self.counter.move_ordering_miss += 1;
+                    increment!(self.counter.move_ordering_miss);
                     0
                 }
             });
@@ -106,15 +137,15 @@ impl AlphaBetaPruning {
     }
 
     fn value(&mut self, state: &State, player: Player, mut alpha: i16, mut beta: i16, limit: u8) -> i16 {
-        self.counter.visisted += 1;
+        increment!(self.counter.visisted);
 
         match self.get_cache(state, player, alpha, beta, limit) {
             Cache::Hit(value) => {
-                self.counter.cache_hit += 1;
+                increment!(self.counter.cache_hit);
                 return value
             },
             Cache::Miss(new_alpha, new_beta) => {
-                self.counter.cache_miss += 1;
+                increment!(self.counter.cache_miss);
                 alpha = new_alpha;
                 beta = new_beta;
             }
@@ -146,10 +177,9 @@ impl AlphaBetaPruning {
 }
 
 impl ArtificialIntelligence for AlphaBetaPruning {
-    type Counter = Counter;
-
-    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult<Counter> {
-        self.counter = Counter::new();
+    fn best_moves(&mut self, state: State, player: Player) -> Box<dyn BestMoves> {
+        #[cfg(feature = "counter")]
+        { self.counter = Counter::new(); }
 
         let start = if self.options.iterative_deepening { 0 } else { self.options.limit };
 
@@ -172,10 +202,12 @@ impl ArtificialIntelligence for AlphaBetaPruning {
             .map(|value| value.1.clone())
             .collect();
 
-        ArtificialIntelligenceResult {
+        Box::new(AlphaBetaPruningBestMoves {
             states: states,
             value: max,
+
+            #[cfg(feature = "counter")]
             counter: self.counter.clone(),
-        }
+        })
     }
 }

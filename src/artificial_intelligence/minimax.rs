@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use crate::game::{heuristic::HeuristicWeights, player::Player, state::State};
 
-use super::{ArtificialIntelligence, ArtificialIntelligenceResult};
+use super::{ArtificialIntelligence, BestMoves};
 
-
+#[cfg(feature = "counter")]
 #[derive(Debug, Clone, Copy)]
 pub struct Counter {
     visisted: u32,
@@ -12,6 +12,7 @@ pub struct Counter {
     cache_miss: u32,
 }
 
+#[cfg(feature = "counter")]
 impl Counter {
     fn new() -> Counter {
         Counter {
@@ -39,18 +40,47 @@ impl Default for MinimaxOptions {
     }
 }
 
+pub struct MinimaxBestMoves {
+    states: Vec<State>,
+    value: i16,
+
+    #[cfg(feature = "counter")]
+    counter: Counter,
+}
+
+impl BestMoves for MinimaxBestMoves {
+    fn states(&self) -> Vec<&State> {
+        self.states.iter().collect()
+    }
+
+    fn value(&self) -> i16 {
+        self.value
+    }
+}
+
+#[cfg(feature = "counter")]
+impl MinimaxBestMoves {
+    pub fn counter(&self) -> Counter {
+        self.counter
+    }
+}
+
 pub struct Minimax {
     cache: HashMap<(State, Player, u8), i16>,
-    counter: Counter,
     options: MinimaxOptions,
+
+    #[cfg(feature = "counter")]
+    counter: Counter,
 }
 
 impl Minimax {
     pub fn new(options: MinimaxOptions) -> Self {
         Minimax {
             cache: HashMap::new(),
+            options: options,
+
+            #[cfg(feature = "counter")]
             counter: Counter::new(),
-            options: options
         }
     }
 
@@ -68,13 +98,13 @@ impl Minimax {
     }
 
     fn value(&mut self, state: &State, player: Player, limit: u8) -> i16 {
-        self.counter.visisted += 1;
+        increment!(self.counter.visisted);
         
         if let Some(cache) = self.get_cache(state, player, limit) {
-            self.counter.cache_hit += 1;
+            increment!(self.counter.cache_hit);
             return cache;
         }
-        self.counter.cache_miss += 1;
+        increment!(self.counter.cache_miss);
         
         if state.finished(player) {
             return state.utility(player);
@@ -94,10 +124,9 @@ impl Minimax {
 }
 
 impl ArtificialIntelligence for Minimax {
-    type Counter = Counter;
-
-    fn best_moves(&mut self, state: State, player: Player) -> ArtificialIntelligenceResult<Counter> {
-        self.counter = Counter::new();
+    fn best_moves(&mut self, state: State, player: Player) -> Box<dyn BestMoves> {
+        #[cfg(feature = "counter")]
+        { self.counter = Counter::new(); }
 
         let values: Vec<(i16, State)> = state.next_states(player).into_iter()
             .map(|s| (self.value(&s, player, self.options.limit), s))
@@ -110,10 +139,12 @@ impl ArtificialIntelligence for Minimax {
             .map(|value| value.1)
             .collect();
 
-        ArtificialIntelligenceResult {
+        Box::new(MinimaxBestMoves {
             states: states,
             value: max,
+
+            #[cfg(feature = "counter")]
             counter: self.counter.clone(),
-        }
+        })
     }
 }
